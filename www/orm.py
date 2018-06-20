@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-#coding=utf-8
+#-*- coding:utf8 -*-
+
+__author__ = 'yexuesong'
 
 """orm means Object-relational mapping
 1. async 替换了 @asyncio.coroutine

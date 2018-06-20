@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-#coding=utf-8
+#-*- coding:utf8 -*-
+
+__author__ = 'yexuesong'
 
 import logging; logging.basicConfig(level=logging.INFO)
 
