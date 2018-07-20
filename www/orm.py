@@ -5,7 +5,7 @@ __author__ = 'yexuesong'
 
 """orm means Object-relational mapping
 1. async 替换了 @asyncio.coroutine
-2. await 替换了yield fromi
+2. await 替换了yield from
 3. __pool.get() 替换了 yield from __pool
 """
 

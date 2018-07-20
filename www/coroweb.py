@@ -12,9 +12,9 @@ from apis import web
 from apis import APIeError
 
 def get(path):
-    '''
+    """
     Define decorator @get('/path')
-    '''
+    """
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kw):
@@ -25,9 +25,9 @@ def get(path):
     return decrator
 
 def post(path):
-    '''
+    """
     Define decorator @post('/path')
-    '''
+    """
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kw):
