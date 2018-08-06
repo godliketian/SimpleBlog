@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-#-*- coding:utf8 -*-
+# -*- coding:utf8 -*-
 
 """
 Default configurations.
 """
 
-__author__ = 'yexuesong'
+__author__ = 'XueSong.Ye'
 
 configs = {
     'debug': True,
-    'db':{
+    'db': {
         'host': '127.0.0.1',
         'port': 3306,
         'user': 'www-data',
