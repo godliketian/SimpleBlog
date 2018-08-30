@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding:utf8 -*-
+# -*- coding: utf-8 -*-
 
 __author__ = 'XueSong.Ye'
 
@@ -42,7 +42,7 @@ async def select(sql, args, size=None):
         async with conn.cursor(aiomysql.DictCursor) as cur:
             await cur.execute(sql.replace('?', '%s'), args or ())
             if size:
-                rs = await cur.fecthmany(size)
+                rs = await cur.fetchmany(size)
             else:
                 rs = await cur.fetchall()
         logging.info('rows returned: %s' % len(rs))
@@ -120,7 +120,7 @@ class ModelMetaclass(type):
 
     def __new__(cls, name, bases, attrs):
         # 排除Model类本身
-        if name == 'Model':
+        if name=='Model':
             return type.__new__(cls, name, bases, attrs)
         # 获取table名称
         tableName = attrs.get('__table__', None) or name
@@ -145,10 +145,10 @@ class ModelMetaclass(type):
         for k in mappings.keys():
             attrs.pop(k)
         escaped_fields = list(map(lambda f: '`%s`' % f, fields))
-        attrs['__mappings__'] = mappings  # 保存属性和列的映射关系
+        attrs['__mappings__'] = mappings # 保存属性和列的映射关系
         attrs['__table__'] = tableName
-        attrs['__primary_key__'] = primaryKey  # 主键属性名
-        attrs['__fields__'] = fields  # 除主键外的属性名
+        attrs['__primary_key__'] = primaryKey # 主键属性名
+        attrs['__fields__'] = fields # 除主键外的属性名
         # 构造默认的SELECT, INSERT, UPDATE和DELETE语句
         attrs['__select__'] = 'select `%s`, %s from `%s`' % (primaryKey, ', '.join(escaped_fields), tableName)
         attrs['__insert__'] = 'insert into `%s` (%s, `%s`) values (%s)' % (
@@ -188,7 +188,7 @@ class Model(dict, metaclass=ModelMetaclass):
 
     @classmethod
     async def findAll(cls, where=None, args=None, **kw):
-        ' find object by where clause. '
+        ' find objects by where clause. '
         sql = [cls.__select__]
         if where:
             sql.append('where')
@@ -216,14 +216,14 @@ class Model(dict, metaclass=ModelMetaclass):
     @classmethod
     async def findNumber(cls, selectField, where=None, args=None):
         ' find number by select and where. '
-        sql = ['select %s __num__ from `%s`' % (selectField, cls.__table__)]
+        sql = ['select %s _num_ from `%s`' % (selectField, cls.__table__)]
         if where:
             sql.append('where')
             sql.append(where)
         rs = await select(' '.join(sql), args, 1)
         if len(rs) == 0:
             return None
-        return rs[0]['__num__']
+        return rs[0]['_num_']
 
     @classmethod
     async def find(cls, pk):

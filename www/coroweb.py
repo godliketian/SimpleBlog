@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding:utf8 -*-
+# -*- coding: utf-8 -*-
 
 __author__ = 'XueSong.Ye'
 
@@ -7,7 +7,7 @@ import asyncio, os, inspect, logging, functools
 
 from urllib import parse
 
-from apis import web
+from aiohttp import web
 
 from apis import APIError
 
@@ -101,7 +101,7 @@ class RequestHandler(object):
         self._has_request_arg = has_request_arg(fn)
         self._has_var_kw_arg = has_var_kw_arg(fn)
         self._has_named_kw_args = has_named_kw_args(fn)
-        self._named_kw_args = get_required_kw_args(fn)
+        self._named_kw_args = get_named_kw_args(fn)
         self._required_kw_args = get_required_kw_args(fn)
 
     async def __call__(self, request):
@@ -116,7 +116,7 @@ class RequestHandler(object):
                     if not isinstance(params, dict):
                         return web.HTTPBadRequest('JSON body must be object.')
                     kw = params
-                elif ct.startwith('application/x-www-form-urlencoded') or ct.startswith('multipart/form-data'):
+                elif ct.startswith('application/x-www-form-urlencoded') or ct.startswith('multipart/form-data'):
                     params = await request.post()
                     kw = dict(**params)
                 else:
@@ -141,20 +141,20 @@ class RequestHandler(object):
             for k, v in request.match_info.items():
                 if k in kw:
                     logging.warning('Duplicate arg name in named arg and kw args: %s' % k)
-                    kw[k] = v
-            if self._has_request_arg:
-                kw['request'] = request
-            # check required kw:
-            if self._required_kw_args:
-                for name in self._required_kw_args:
-                    if not name in kw:
-                        return web.HTTPBadRequest('Missing argument: %s' % name)
-            logging.info('call with args: %s' % str(kw))
-            try:
-                r = await self._func(**kw)
-                return r
-            except APIError as e:
-                return dict(error=e.error, data=e.data, message=e.message)
+                kw[k] = v
+        if self._has_request_arg:
+            kw['request'] = request
+        # check required kw:
+        if self._required_kw_args:
+            for name in self._required_kw_args:
+                if not name in kw:
+                    return web.HTTPBadRequest('Missing argument: %s' % name)
+        logging.info('call with args: %s' % str(kw))
+        try:
+            r = await self._func(**kw)
+            return r
+        except APIError as e:
+            return dict(error=e.error, data=e.data, message=e.message)
 
 
 def add_static(app):
@@ -180,7 +180,7 @@ def add_routes(app, module_name):
     if n == (-1):
         mod = __import__(module_name, globals(), locals())
     else:
-        name = module_name[n + 1:]
+        name = module_name[n+1:]
         mod = getattr(__import__(module_name[:n], globals(), locals(), [name]), name)
     for attr in dir(mod):
         if attr.startswith('_'):

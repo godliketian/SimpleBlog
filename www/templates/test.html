@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>test yxs - webapp</title>
+    <meta charset="utf-8" />
+    <title>Test users - Awesome Python Webapp</title>
 </head>
 <body>
-<h1>All users</h1>
-{% for u in users %}
-<p>{{ u.name }} / {{ u.email}}</p>
+    <h1>All users</h1>
+    {% for u in users %}
+    <p>{{ u.name }} / {{ u.email }}</p>
+    {% endfor %}
 </body>
 </html>

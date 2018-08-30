@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding:utf8 -*-
+# -*- coding: utf-8 -*-
 
 __author__ = 'XueSong.Ye'
 
@@ -24,12 +24,12 @@ from coroweb import add_routes, add_static
 def init_jinja2(app, **kw):
     logging.info('init jinja2...')
     options = dict(
-        autoescape=kw.get('autoescape', True),
-        block_start_string=kw.get('block_start_string', '{%'),
-        block_end_string=kw.get('block_start_string', '%}'),
-        variable_start_string=kw.get('variable_start_string', '{{'),
-        variable_end_string=kw.get('variable_end_string', '}}'),
-        auto_reload=kw.get('auto_reload', True)
+        autoescape = kw.get('autoescape', True),
+        block_start_string = kw.get('block_start_string', '{%'),
+        block_end_string = kw.get('block_end_string', '%}'),
+        variable_start_string = kw.get('variable_start_string', '{{'),
+        variable_end_string = kw.get('variable_end_string', '}}'),
+        auto_reload = kw.get('auto_reload', True)
     )
     path = kw.get('path', None)
     if path is None:
@@ -45,7 +45,7 @@ def init_jinja2(app, **kw):
 
 async def logger_factory(app, handler):
     async def logger(request):
-        loggging.info('Request: %s %s' % (request.method, request.path))
+        logging.info('Request: %s %s' % (request.method, request.path))
         # await asyncio.sleep(0.3)
         return (await handler(request))
 
@@ -70,7 +70,7 @@ async def response_factory(app, handler):
     async def response(request):
         logging.info('Response handler...')
         r = await handler(request)
-        if isinstance(r, web.StremResponse):
+        if isinstance(r, web.StreamResponse):
             return r
         if isinstance(r, bytes):
             resp = web.Response(body=r)
@@ -126,11 +126,11 @@ async def init(loop):
     app = web.Application(loop=loop, middlewares=[
         logger_factory, response_factory
     ])
-    init_jinjia2(app, filters=dict(datetime=datetime_filter))
-    app.routes(app, 'handler')
+    init_jinja2(app, filters=dict(datetime=datetime_filter))
+    add_routes(app, 'handlers')
     add_static(app)
     srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9000)
-    logging.info('server started at http://127.0.0.1:9000')
+    logging.info('server started at http://127.0.0.1:9000...')
     return srv
 
 
