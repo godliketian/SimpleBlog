@@ -120,20 +120,25 @@ def datetime_filter(t):
     dt = datetime.fromtimestamp(t)
     return u'%s年%s月%s日' % (dt.year, dt.month, dt.day)
 
-
+# 定义init函数，标记为协程，传入loop协程参数
 async def init(loop):
     await orm.create_pool(loop=loop, host='127.0.0.1', port=3306, user='www-data', password='www-data', db='webapp')
+    # 创建一个web服务器实例，用于处理URL，HTTP协议
     app = web.Application(loop=loop, middlewares=[
         logger_factory, response_factory
     ])
     init_jinja2(app, filters=dict(datetime=datetime_filter))
+    # 将URL注册进route，将URL和index处理函数绑定，当浏览器敲击URL时，返回处理函数的内容，也就是返回一个HTTP响应
     add_routes(app, 'handlers')
     add_static(app)
+    # 创建一个监听服务
     srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9000)
     logging.info('server started at http://127.0.0.1:9000...')
     return srv
 
-
+# get_event_loop创建一个事件循环，然后使用run_until_complete将协程注册到事件循环，并启动事件循环
 loop = asyncio.get_event_loop()
+# run_until_complete()是一个阻塞调用，将协程注册到事件循环，并启动事件循环，直到返回结果
 loop.run_until_complete(init(loop))
+# run_forever()指一直运行协程，直到调用stop()函数，保证服务器一直开启监听状态
 loop.run_forever()
