@@ -22,7 +22,7 @@ from coroweb import add_routes, add_static
 
 
 def init_jinja2(app, **kw):
-    logging.info('init jinja2...')
+    logging.info('  init jinja2...')
     options = dict(
         autoescape = kw.get('autoescape', True),
         block_start_string = kw.get('block_start_string', '{%'),
@@ -34,7 +34,7 @@ def init_jinja2(app, **kw):
     path = kw.get('path', None)
     if path is None:
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
-    logging.info('set jinja2 template path: %s' % path)
+    logging.info('  set jinja2 template path: %s' % path)
     env = Environment(loader=FileSystemLoader(path), **options)
     filters = kw.get('filters', None)
     if filters is not None:
@@ -45,7 +45,7 @@ def init_jinja2(app, **kw):
 
 async def logger_factory(app, handler):
     async def logger(request):
-        logging.info('Request: %s %s' % (request.method, request.path))
+        logging.info('  Request: %s %s' % (request.method, request.path))
         # await asyncio.sleep(0.3)
         return (await handler(request))
 
@@ -57,10 +57,10 @@ async def data_factory(app, handler):
         if request.method == 'POST':
             if request.content_type.startswith('application/json'):
                 request.__data__ = await request.json()
-                logging.info('request json: %s' % str(request.__data__))
+                logging.info('  request json: %s' % str(request.__data__))
             elif request.content_type.startswith('application/x-www-form-urlencoded'):
                 request.__data__ = await request.post()
-                logging.info('request form: %s' % str(request.__data__))
+                logging.info('  request form: %s' % str(request.__data__))
         return (await handler(request))
 
     return parse_data
@@ -68,7 +68,7 @@ async def data_factory(app, handler):
 
 async def response_factory(app, handler):
     async def response(request):
-        logging.info('Response handler...')
+        logging.info('  Response handler...')
         r = await handler(request)
         if isinstance(r, web.StreamResponse):
             return r
@@ -133,7 +133,7 @@ async def init(loop):
     add_static(app)
     # 创建一个监听服务
     srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9000)
-    logging.info('server started at http://127.0.0.1:9000...')
+    logging.info('  server started at http://127.0.0.1:9000...')
     return srv
 
 # get_event_loop创建一个事件循环，然后使用run_until_complete将协程注册到事件循环，并启动事件循环
