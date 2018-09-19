@@ -122,7 +122,7 @@ def datetime_filter(t):
 
 # 定义init函数，标记为协程，传入loop协程参数
 async def init(loop):
-    await orm.create_pool(loop=loop, host='127.0.0.1', port=3306, user='www-data', password='www-data', db='webapp')
+    await orm.create_pool(loop=loop, host='127.0.0.1', port=3306, user='webapp', password='webapp', db='webapp')
     # 创建一个web服务器实例，用于处理URL，HTTP协议
     app = web.Application(loop=loop, middlewares=[
         logger_factory, response_factory
