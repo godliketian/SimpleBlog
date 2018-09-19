@@ -4,16 +4,17 @@
 
 * CentOS7.5 [Download](https://mirrors.aliyun.com/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1804.iso)
 
-* Python3.4.9 and Pip3
+* Python3.6.6 and Pip3
 
     ```
     yum -y install epel-release
     
-    yum -y install python34
+    yum -y install python36
     
-    curl https://bootstrap.pypa.io/get-pip.py | python3.4
+    curl https://bootstrap.pypa.io/get-pip.py | python3.6
     
     python3 get-pip.py
+    
     ```
 
 * MySQL8.0
