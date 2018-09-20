@@ -2,7 +2,7 @@
 
 * CentOS7.5 [Download](https://mirrors.aliyun.com/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1804.iso)
 
-* Python3.6.6 and Pip3
+* Install Python3.6.6 and Pip3
 
     ```
     yum -y install epel-release
@@ -15,7 +15,7 @@
     
     ```
 
-* MySQL8.0
+* Install MySQL8.0
 
     ```
     yum localinstall https://repo.mysql.com//mysql80-community-release-el7-1.noarch.rpm
