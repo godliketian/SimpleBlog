@@ -22,32 +22,35 @@ from coroweb import add_routes, add_static
 
 
 def init_jinja2(app, **kw):
+    """模板引擎初始化"""
     logging.info('  init jinja2...')
     options = dict(
-        autoescape = kw.get('autoescape', True),
-        block_start_string = kw.get('block_start_string', '{%'),
-        block_end_string = kw.get('block_end_string', '%}'),
-        variable_start_string = kw.get('variable_start_string', '{{'),
-        variable_end_string = kw.get('variable_end_string', '}}'),
-        auto_reload = kw.get('auto_reload', True)
+        autoescape=kw.get('autoescape', True),  # 默认打开自动转义 转义字符
+        block_start_string=kw.get('block_start_string', '{%'),  # 模板控制块的字符串 {% block %}
+        block_end_string=kw.get('block_end_string', '%}'),
+        variable_start_string=kw.get('variable_start_string', '{{'),  # 模板变量的字符串 {{ var/func }}
+        variable_end_string=kw.get('variable_end_string', '}}'),
+        auto_reload=kw.get('auto_reload', True)
     )
     path = kw.get('path', None)
     if path is None:
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')  # 获得模板路径
     logging.info('  set jinja2 template path: %s' % path)
-    env = Environment(loader=FileSystemLoader(path), **options)
-    filters = kw.get('filters', None)
+    env = Environment(loader=FileSystemLoader(path), **options)  # 用文件系统加载器加载模板
+    filters = kw.get('filters', None)  # 尝试获取过滤器
     if filters is not None:
         for name, f in filters.items():
             env.filters[name] = f
-    app['__templating__'] = env
+    app['__templating__'] = env  # Web实例程序绑定模板属性
 
 
 async def logger_factory(app, handler):
+    """中间件，可以在处理请求前，对请求进行验证、筛选、记录等操作"""
+
     async def logger(request):
-        logging.info('  Request: %s %s' % (request.method, request.path))
+        logging.info('  Request: %s %s' % (request.method, request.path))  # 记录日志
         # await asyncio.sleep(0.3)
-        return (await handler(request))
+        return (await handler(request))  # 继续处理请求
 
     return logger
 
@@ -68,38 +71,40 @@ async def data_factory(app, handler):
 
 async def response_factory(app, handler):
     async def response(request):
+        """对处理函数的响应进行处理"""
         logging.info('  Response handler...')
         r = await handler(request)
-        if isinstance(r, web.StreamResponse):
+        if isinstance(r, web.StreamResponse):  # 处理响应流
             return r
-        if isinstance(r, bytes):
+        if isinstance(r, bytes):  # 处理字节类响应
             resp = web.Response(body=r)
             resp.content_type = 'application/octet-stream'
             return resp
-        if isinstance(r, str):
+        if isinstance(r, str):  # 处理字符串类响应
             if r.startswith('redirect:'):
-                return web.HTTPFound(r[9:])
+                return web.HTTPFound(r[9:])  # 返回重定向响应
             resp = web.Response(body=r.encode('utf-8'))
             resp.content_type = 'text/html;charset=utf-8'
-            return resp
+            return resp  # 返回HTML
         if isinstance(r, dict):
-            template = r.get('__template__')
+            template = r.get('__template__')  # 处理字典类响应
             if template is None:
                 resp = web.Response(body=json.dumps(r, ensure_ascii=False, default=lambda
-                    o: o.__dict__).encode('utf-8'))
+                    o: o.__dict__).encode('utf-8'))  # 返回json类响应
                 resp.content_type = 'application/json;charset=utf-8'
                 return resp
             else:
-                resp = web.Response(body=app['__templating__'].get_template(template).render(**r).encode('utf-8'))
+                resp = web.Response(body=app['__templating__'].get_template(template).render(**r).encode(
+                    'utf-8'))  # 获取模板，并传入响应参数进行渲染，生成HTML
                 resp.content_type = 'text/html;charset=utf-8'
                 return resp
         if isinstance(r, int) and r >= 100 and r < 600:
-            return web.Response(r)
+            return web.Response(r)  # 处理响应码
         if isinstance(r, tuple) and len(r) == 2:
-            t, m = r
+            t, m = r  # 处理有描述信息的效应码
             if isinstance(t, int) and t >= 100 and t < 600:
                 return web.Response(t, str(m))
-        # default:
+        # default: 其他的响应返回
         resp = web.Response(body=str(r).encode('utf-8'))
         resp.content_type = 'text/plain;charset=utf-8'
         return resp
@@ -120,25 +125,21 @@ def datetime_filter(t):
     dt = datetime.fromtimestamp(t)
     return u'%s年%s月%s日' % (dt.year, dt.month, dt.day)
 
-# 定义init函数，标记为协程，传入loop协程参数
-async def init(loop):
+
+async def init(loop):  # 定义init函数，标记为协程，传入loop协程参数
+    """服务器运行程序：创建web实例程序，该实例程序绑定路由和处理函数，运行服务器，监听端口请求，送到路由处理"""
     await orm.create_pool(loop=loop, host='127.0.0.1', port=3306, user='webapp', password='webapp', db='webapp')
-    # 创建一个web服务器实例，用于处理URL，HTTP协议
     app = web.Application(loop=loop, middlewares=[
         logger_factory, response_factory
-    ])
+    ])  # 创建一个web服务器实例，用于处理URL，HTTP协议
     init_jinja2(app, filters=dict(datetime=datetime_filter))
-    # 将URL注册进route，将URL和index处理函数绑定，当浏览器敲击URL时，返回处理函数的内容，也就是返回一个HTTP响应
-    add_routes(app, 'handlers')
+    add_routes(app, 'handlers')  # 将URL注册进route，将URL和index处理函数绑定，当浏览器敲击URL时，返回处理函数的内容，也就是返回一个HTTP响应
     add_static(app)
-    # 创建一个监听服务
-    srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9000)
+    srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9000)  # 创建一个监听服务
     logging.info('  server started at http://127.0.0.1:9000...')
     return srv
 
-# get_event_loop创建一个事件循环，然后使用run_until_complete将协程注册到事件循环，并启动事件循环
-loop = asyncio.get_event_loop()
-# run_until_complete()是一个阻塞调用，将协程注册到事件循环，并启动事件循环，直到返回结果
-loop.run_until_complete(init(loop))
-# run_forever()指一直运行协程，直到调用stop()函数，保证服务器一直开启监听状态
-loop.run_forever()
+
+loop = asyncio.get_event_loop()  # get_event_loop创建一个事件循环，然后使用run_until_complete将协程注册到事件循环，并启动事件循环
+loop.run_until_complete(init(loop))  # run_until_complete()是一个阻塞调用，将协程注册到事件循环，并启动事件循环，直到返回结果
+loop.run_forever()  # run_forever()指一直运行协程，直到调用stop()函数，保证服务器一直开启监听状态

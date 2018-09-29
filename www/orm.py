@@ -111,30 +111,35 @@ class Field(object):
 
 class StringField(Field):
     """从Field继承，定义一个字符类，在ORM中对应数据库对的字符类型，默认可变长字符串长度等于100."""
+
     def __init__(self, name=None, primary_key=False, default=None, ddl='varchar(100)'):
         super().__init__(name, ddl, primary_key, default)
 
 
 class BooleanField(Field):
     """定义一个布尔类"""
+
     def __init__(self, name=None, default=False):
         super().__init__(name, 'boolean', False, default)
 
 
 class IntegerField(Field):
     """定义一个整数类，在ORM中对应数据库的BIGINT整数类型"""
+
     def __init__(self, name=None, primary_key=False, default=0):
         super().__init__(name, 'bigint', primary_key, default)
 
 
 class FloatField(Field):
     """定义一个浮点数类，在ORM中对应数据库的REAL双精度浮点数类型"""
+
     def __init__(self, name=None, primary_key=False, default=0.0):
         super().__init__(name, 'real', primary_key, default)
 
 
 class TextField(Field):
     """定义一个文本类，在ORM中对应数据库的TEXT长文本数类型"""
+
     def __init__(self, name=None, default=None):
         super().__init__(name, 'text', False, default)
 
@@ -150,42 +155,45 @@ class ModelMetaclass(type):
 
         采集应用元类的子类属性信息，将采集的信息作为参数传入 __new__ 方法，应用 __new__ 方法修改类。
         """
-        if name == 'Model': # 排除Model类本身，即不对Model类应用元类
-            return type.__new__(cls, name, bases, attrs) # 当前准备创建的类的对象、类的名字model、类继承的父类集合、类的方法集合
-        tableName = attrs.get('__table__', None) or name # 获取table名称，默认为None，或者为类名
+        if name == 'Model':  # 排除Model类本身，即不对Model类应用元类
+            return type.__new__(cls, name, bases, attrs)  # 当前准备创建的类的对象、类的名字model、类继承的父类集合、类的方法集合
+        tableName = attrs.get('__table__', None) or name  # 获取table名称，默认为None，或者为类名
         logging.info('  found model: %s (table: %s)' % (name, tableName))
-        mappings = dict() # 获取所有的Field和主键名，存储映射表的属性（键-值），列名和对应的数据类型
-        fields = [] # 存储映射表类的非主键属性（仅键），非主键的列
-        primaryKey = None # 主键对应字段，用于主键查重，默认为None
-        for k, v in attrs.items(): # 遍历attrs方法集合
-            if isinstance(v, Field): # 提取数据类的列
+        mappings = dict()  # 获取所有的Field和主键名，存储映射表的属性（键-值），列名和对应的数据类型
+        fields = []  # 存储映射表类的非主键属性（仅键），非主键的列
+        primaryKey = None  # 主键对应字段，用于主键查重，默认为None
+        for k, v in attrs.items():  # 遍历attrs方法集合
+            if isinstance(v, Field):  # 提取数据类的列
                 logging.info('  found mapping: %s ==> %s' % (k, v))
-                mappings[k] = v # 存储列名和数据类型
-                if v.primary_key: # 找到主键
+                mappings[k] = v  # 存储列名和数据类型
+                if v.primary_key:  # 找到主键
                     logging.info('  found primary key %s' % k)
-                    if primaryKey: # 查找主键和查重，有重复则抛出异常
+                    if primaryKey:  # 查找主键和查重，有重复则抛出异常
                         raise StandardError('Duplicate primary key for field: %s' % k)
                     primaryKey = k
                 else:
-                    fields.append(k) # 存储非主键的列名
-        if not primaryKey: # 整个表如果没有主键，抛出异常
+                    fields.append(k)  # 存储非主键的列名
+        if not primaryKey:  # 整个表如果没有主键，抛出异常
             raise StandardError('Primary key not found.')
         for k in mappings.keys():
-            attrs.pop(k) # 过滤掉列，只剩下方法；删除映射表类的属性，以便应用新的属性
-        escaped_fields = list(map(lambda f: '`%s`' % f, fields)) # 使用反单引号" ` "区别MySQL保留关键字，提高兼容性；``(可执行命令)区别于''(字符串标识)
+            attrs.pop(k)  # 过滤掉列，只剩下方法；删除映射表类的属性，以便应用新的属性
+        escaped_fields = list(map(lambda f: '`%s`' % f, fields))  # 使用反单引号" ` "区别MySQL保留关键字，提高兼容性；``(可执行命令)区别于''(字符串标识)
         # 重写属性
-        attrs['__mappings__'] = mappings # 保存属性和列的映射关系
+        attrs['__mappings__'] = mappings  # 保存属性和列的映射关系
         attrs['__table__'] = tableName
-        attrs['__primary_key__'] = primaryKey # 主键属性名
-        attrs['__fields__'] = fields # 除主键外的属性名
+        attrs['__primary_key__'] = primaryKey  # 主键属性名
+        attrs['__fields__'] = fields  # 除主键外的属性名
         # 构造默认的SELECT, INSERT, UPDATE和DELETE语句
-        attrs['__select__'] = 'select `%s`, %s from `%s`' % (primaryKey, ', '.join(escaped_fields), tableName) # 构造select执行语句，查整个表
+        attrs['__select__'] = 'select `%s`, %s from `%s`' % (
+            primaryKey, ', '.join(escaped_fields), tableName)  # 构造select执行语句，查整个表
         attrs['__insert__'] = 'insert into `%s` (%s, `%s`) values (%s)' % (
-            tableName, ', '.join(escaped_fields), primaryKey, create_args_string(len(escaped_fields) + 1)) # 构造insert执行语句，？作为占位符
+            tableName, ', '.join(escaped_fields), primaryKey,
+            create_args_string(len(escaped_fields) + 1))  # 构造insert执行语句，？作为占位符
         attrs['__update__'] = 'update `%s` set %s where `%s`=?' % (
-            tableName, ', '.join(map(lambda f: '`%s`=?' % (mappings.get(f).name or f), fields)), primaryKey) # 构造update执行语句，根据主键值更新对应一行的记录，？作为占位符，待传入更新值和主键值
-        attrs['__delete__'] = 'delete from `%s` where `%s`=?' % (tableName, primaryKey) # 构建delete执行语句，根据主键值删除对应行
-        return type.__new__(cls, name, bases, attrs) # 返回当前准备创建的类的对象、类的名字、类继承的父类集合、类的方法集合（经过以上代码处理过的总集合）
+            tableName, ', '.join(map(lambda f: '`%s`=?' % (mappings.get(f).name or f), fields)),
+            primaryKey)  # 构造update执行语句，根据主键值更新对应一行的记录，？作为占位符，待传入更新值和主键值
+        attrs['__delete__'] = 'delete from `%s` where `%s`=?' % (tableName, primaryKey)  # 构建delete执行语句，根据主键值删除对应行
+        return type.__new__(cls, name, bases, attrs)  # 返回当前准备创建的类的对象、类的名字、类继承的父类集合、类的方法集合（经过以上代码处理过的总集合）
 
 
 class Model(dict, metaclass=ModelMetaclass):
@@ -199,7 +207,7 @@ class Model(dict, metaclass=ModelMetaclass):
         super(Model, self).__init__(**kw)
 
     def __getattr__(self, key):
-        """ getattr,settattr实现属性动态绑定和获取"""
+        """ getattr,setattr实现属性动态绑定和获取"""
         try:
             return self[key]
         except KeyError:
@@ -209,93 +217,86 @@ class Model(dict, metaclass=ModelMetaclass):
         self[key] = value
 
     def getValue(self, key):
+        """返回属性值，默认为None"""
         return getattr(self, key, None)
 
     def getValueOrDefault(self, key):
+        """返回属性值，空则返回默认值"""
         value = getattr(self, key, None)
         if value is None:
-            field = self.__mappings__[key]
+            field = self.__mappings__[key]  # 查取属性对应的列的数量类型默认值
             if field.default is not None:
                 value = field.default() if callable(field.default) else field.default
                 logging.debug('using default value for %s: %s' % (key, str(value)))
                 setattr(self, key, value)
         return value
 
-    # ORM框架下，每条记录作为对象返回
-    # @classmethod定义类方法，类对象cls便完成某些操作
-    @classmethod
+    @classmethod  # ORM框架下，每条记录作为对象返回;@classmethod定义类方法，类对象cls便完成某些操作;添加类方法，对应查表，默认查整个表，可通过where limit设置查找条件。
     async def findAll(cls, where=None, args=None, **kw):
-        ' find objects by where clause. '
-        sql = [cls.__select__]
-        # 添加WHERE子句
-        if where:
+        """find objects by where clause. """
+        sql = [cls.__select__]  # 用一个列表存储SELECT语句
+        if where:  # 添加WHERE子句作为条件
             sql.append('where')
             sql.append(where)
         if args is None:
             args = []
-        orderBy = kw.get('orderBy', None)
-        # 添加ORDER BY子句
-        if orderBy:
+        orderBy = kw.get('orderBy', None)  # 对查询结果排序排序
+        if orderBy:  # 添加ORDER BY子句
             sql.append('order by')
             sql.append(orderBy)
-        limit = kw.get('limit', None)
-        # 添加LIMIT子句
-        if limit is not None:
+        limit = kw.get('limit', None)  # 截取查询结果
+        if limit is not None:  # 添加LIMIT子句
             sql.append('limit')
-            if isinstance(limit, int):
+            if isinstance(limit, int):  # 截取前limit条结果
                 sql.append('?')
                 args.append(limit)
-            elif isinstance(limit, tuple) and len(limit) == 2:
+            elif isinstance(limit, tuple) and len(limit) == 2:  # 略过前limit[0]条记录，开始截取limit[1]条记录
                 sql.append('?, ?')
-                args.extend(limit)
+                args.extend(limit)  # 将limit合并到args列表的末尾
             else:
                 raise ValueError('Invalid limit value: %s' % str(limit))
-        # execute SQL
-        rs = await select(' '.join(sql), args)
-        # 将每条记录作为对象返回
-        return [cls(**r) for r in rs]
+        rs = await select(' '.join(sql), args)  # 构造更新后的select语句，并执行，返回属性值[{},{},{}]
+        return [cls(**r) for r in rs]  # 将每条记录作为对象返回，返回一个列表。每个元素都是一个dict，相当于一行记录
 
-    # 过滤结果数量
-    @classmethod
+    @classmethod  # 添加类方法，查找特定列，可通过where设置条件
     async def findNumber(cls, selectField, where=None, args=None):
         ' find number by select and where. '
-        sql = ['select %s _num_ from `%s`' % (selectField, cls.__table__)]
+        sql = ['select %s _num_ from `%s`' % (selectField, cls.__table__)]  # _num_是SQL的一个字段别名用法，Alias关键字可以省略
         # 添加WHERE子句
         if where:
             sql.append('where')
             sql.append(where)
-        rs = await select(' '.join(sql), args, 1)
+        rs = await select(' '.join(sql), args, 1)  # 更新select语句并执行，返回由dict组成的list
         if len(rs) == 0:
             return None
-        return rs[0]['_num_']
+        return rs[0]['_num_']  # 根据别名key取值
 
-    # 返回主键的一条记录
-    @classmethod
+    @classmethod  # 类方法，根据主键查询一条记录并返回
     async def find(cls, pk):
         ' find object by primary key. '
         rs = await select('%s where `%s`=?' % (cls.__select__, cls.__primary_key__), [pk], 1)
         if len(rs) == 0:
             return None
-        return cls(**rs[0])
+        return cls(**rs[0])  # 将dict作为关键字参数传入当前类的对象
 
-    # INSERT command
     async def save(self):
-        args = list(map(self.getValueOrDefault, self.__fields__))
-        args.append(self.getValueOrDefault(self.__primary_key__))
-        rows = await execute(self.__insert__, args)
+        """实例方法，映射插入记录"""
+        args = list(map(self.getValueOrDefault, self.__fields__))  # 非主键的值列表
+        args.append(self.getValueOrDefault(self.__primary_key__))  # 添加主键值
+        rows = await execute(self.__insert__, args)  # 执行insert语句
         if rows != 1:
             logging.warn('failed to insert record: affected rows: %s' % rows)
 
-    # UPDATE command
     async def update(self):
+        """映射更新记录"""
         args = list(map(self.getValue, self.__fields__))
         args.append(self.getValue(self.__primary_key__))
         rows = await execute(self.__update__, args)
         if rows != 1:
             logging.warn('failed to update by primary key: affected rows: %s' % rows)
 
-    # DELETE command
     async def remove(self):
+        """映射根据主键值的删除记录"""
         args = [self.getValue(self.__primary_key__)]
         rows = await execute(self.__delete__, args)
         if rows != 1:
