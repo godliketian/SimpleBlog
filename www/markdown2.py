@@ -776,7 +776,7 @@ class Markdown(object):
                 .*\n+
               )*
             )
-            # Lookahead for non-space at line-start, or end of doc.
+            # Lookahead for non-space at line-start, or end of docs.
             (?:(?=^[ ]{0,%d}\S)|\Z)
             ''' % (less_than_tab, self.tab_width, self.tab_width),
             re.X | re.M)
@@ -1640,7 +1640,7 @@ class Markdown(object):
                 .*\n+
               )+
             )
-            ((?=^[ ]{0,%d}\S)|\Z)   # Lookahead for non-space at line-start, or end of doc
+            ((?=^[ ]{0,%d}\S)|\Z)   # Lookahead for non-space at line-start, or end of docs
             # Lookahead to make sure this block isn't already in a code block.
             # Needed when syntax highlighting is being used.
             (?![^<]*\</code\>)
@@ -2229,7 +2229,7 @@ def _xml_oneliner_re_from_tab_width(tab_width):
         (?:
             (?<=\n\n)       # Starting after a blank line
             |               # or
-            \A\n?           # the beginning of the doc
+            \A\n?           # the beginning of the docs
         )
         (                           # save in $1
             [ ]{0,%d}
@@ -2249,7 +2249,7 @@ def _hr_tag_re_from_tab_width(tab_width):
         (?:
             (?<=\n\n)       # Starting after a blank line
             |               # or
-            \A\n?           # the beginning of the doc
+            \A\n?           # the beginning of the docs
         )
         (                       # save in \1
             [ ]{0,%d}
