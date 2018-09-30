@@ -2,4 +2,6 @@
 
 # Docs 
 
-[01-init_env](https://github.com/yexuesong/webapp/blob/master/doc/01-init_env.md)
+以下为各个模块的概念解析
+
+[01-init_env](https://github.com/yexuesong/webapp/blob/master/docs/01-init_env.md)
