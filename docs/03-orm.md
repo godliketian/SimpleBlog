@@ -45,15 +45,15 @@ Nonscrollable: Can be traversed only in one direction and cannot skip rows
 
 主键用于索引，需要满足以下条件：
 
->①任何两行都不具有相同的主键值
+①任何两行都不具有相同的主键值
 
->②每个行都必须具有一个主键值（主键列不允许NULL值）
+②每个行都必须具有一个主键值（主键列不允许NULL值）
 
->③不更新、重用主键列的值
+③不更新、重用主键列的值
 
->④不在主键列中使用可能会更改的值
+④不在主键列中使用可能会更改的值
 
->⑤无特殊需求下Innodb建议使用与业务无关的自增ID作为主键
+⑤无特殊需求下Innodb建议使用与业务无关的自增ID作为主键
 * [@classmethod and @staticmethod](https://stackoverflow.com/questions/12179271/meaning-of-classmethod-and-staticmethod-for-beginner)
 
 @classmethod修饰的方法是类专属的，且可以通过类名进行调用，没有此参数指定的类的方法为实例方法。它的好处在于重构类时不需要修改构造函数，额外添加需要处理的函数，并使用装饰符@classmethod即可。
