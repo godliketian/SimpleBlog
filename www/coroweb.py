@@ -142,8 +142,11 @@ class RequestHandler(object):
                         """
                         kw[k] = v[0]
         if kw is None:
+            # 请求无请求参数时
             kw = dict(**request.match_info)
+            # Read-only property with AbstractMatchInfo instance for result of route resolving
         else:
+            # 参数字典收集请求参数
             if not self._has_var_kw_arg and self._named_kw_args:
                 # remove all unamed kw:
                 copy = dict()
@@ -161,28 +164,30 @@ class RequestHandler(object):
         # check required kw:
         if self._required_kw_args:
             for name in self._required_kw_args:
-                if not name in kw:
+                if not name in kw:  # 当存在关键字参数未被赋值时返回，例如：一般的账号注册时，没填入密码就提交注册申请时，提示密码未输入
                     return web.HTTPBadRequest('Missing argument: %s' % name)
         logging.info('call with args: %s' % str(kw))
         try:
-            r = await self._func(**kw)
+            r = await self._func(**kw)  # 最后调用处理函数，并传入请求参数，进行请求处理
             return r
         except APIError as e:
             return dict(error=e.error, data=e.data, message=e.message)
 
 
 def add_static(app):
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+    """添加静态资源路径"""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')  # 返回脚本所在目录的绝对路径，加上static
     app.router.add_static('/static/', path)
     logging.info('  add static %s => %s' % ('/static/', path))
 
 
 def add_route(app, fn):
-    method = getattr(fn, '__method__', None)
+    """将处理函数注册到Web服务程序的路由当中"""
+    method = getattr(fn, '__method__', None)  # 获取 fn 的 __method__ 属性的值，无则为None
     path = getattr(fn, '__route__', None)
     if path is None or method is None:
         raise ValueError('@get or @post not defined in %s.' % str(fn))
-    if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):
+    if not asyncio.iscoroutinefunction(fn) and not inspect.isgeneratorfunction(fn):  # 当处理函数不是协程时，封装为协程函数
         fn = asyncio.coroutine(fn)
     logging.info(
         '  add route %s %s => %s(%s)' % (method, path, fn.__name__, ', '.join(inspect.signature(fn).parameters.keys())))
@@ -190,18 +195,19 @@ def add_route(app, fn):
 
 
 def add_routes(app, module_name):
+    """自动把handler模块符合条件的函数注册"""
     n = module_name.rfind('.')
-    if n == (-1):
-        mod = __import__(module_name, globals(), locals())
+    if n == (-1):  # 没有匹配项时
+        mod = __import__(module_name, globals(), locals())  # import一个模块，获取模块名 __name__
     else:
-        name = module_name[n + 1:]
+        name = module_name[n + 1:]  # 添加模块属性 name，并赋值给mod
         mod = getattr(__import__(module_name[:n], globals(), locals(), [name]), name)
-    for attr in dir(mod):
-        if attr.startswith('_'):
+    for attr in dir(mod):  # dir(mod) 获取模块所有属性
+        if attr.startswith('_'):  # 略过所有私有属性
             continue
         fn = getattr(mod, attr)
-        if callable(fn):
+        if callable(fn):  # 获取属性的值，可以是一个method
             method = getattr(fn, '__method__', None)
             path = getattr(fn, '__route__', None)
             if method and path:
-                add_route(app, fn)
+                add_route(app, fn)  # 对已经修饰过的URL处理函数注册到Web服务的路由中
