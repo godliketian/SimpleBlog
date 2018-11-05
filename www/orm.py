@@ -23,7 +23,7 @@ def log(sql, args=()):
 
 async def create_pool(loop, **kw):
     """创建全局连接池，**kw 关键字参数集，用于传递 host port user password db 等的数据库连接参数。"""
-    logging.info('  create database connection pool...')
+    logging.info('create database connection pool...')
     global __pool  # 将 __pool 定义为全局变量
     __pool = await aiomysql.create_pool(
         host=kw.get('host', 'localhost'),
@@ -158,13 +158,13 @@ class ModelMetaclass(type):
         if name == 'Model':  # 排除Model类本身，即不对Model类应用元类
             return type.__new__(cls, name, bases, attrs)  # 当前准备创建的类的对象、类的名字model、类继承的父类集合、类的方法集合
         tableName = attrs.get('__table__', None) or name  # 获取table名称，默认为None，或者为类名
-        logging.info('  found model: %s (table: %s)' % (name, tableName))
+        logging.info('found model: %s (table: %s)' % (name, tableName))
         mappings = dict()  # 获取所有的Field和主键名，存储映射表的属性（键-值），列名和对应的数据类型
         fields = []  # 存储映射表类的非主键属性（仅键），非主键的列
         primaryKey = None  # 主键对应字段，用于主键查重，默认为None
         for k, v in attrs.items():  # 遍历attrs方法集合
             if isinstance(v, Field):  # 提取数据类的列
-                logging.info('  found mapping: %s ==> %s' % (k, v))
+                logging.info('found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v  # 存储列名和数据类型
                 if v.primary_key:  # 找到主键
                     if primaryKey:  # 查找主键和查重，有重复则抛出异常
