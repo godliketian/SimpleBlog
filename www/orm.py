@@ -167,10 +167,6 @@ class ModelMetaclass(type):
                 logging.info('  found mapping: %s ==> %s' % (k, v))
                 mappings[k] = v  # 存储列名和数据类型
                 if v.primary_key:  # 找到主键
-<<<<<<< HEAD
-=======
-                    logging.info('  found primary key %s' % k)
->>>>>>> 2dda44b762ec9d280af1b9ca30bc3509b41afa85
                     if primaryKey:  # 查找主键和查重，有重复则抛出异常
                         raise StandardError('Duplicate primary key for field: %s' % k)
                     primaryKey = k
