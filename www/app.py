@@ -27,6 +27,7 @@ from handlers import cookie2user, COOKIE_NAME
 
 def init_jinja2(app, **kw):
     """模板引擎初始化"""
+<<<<<<< HEAD
     logging.info('init jinja2...')
     options = dict(
         autoescape = kw.get('autoescape', True),  # 默认打开自动转义 转义字符
@@ -35,11 +36,25 @@ def init_jinja2(app, **kw):
         variable_start_string = kw.get('variable_start_string', '{{'),  # 模板变量的字符串 {{ var/func }}
         variable_end_string = kw.get('variable_end_string', '}}'),
         auto_reload = kw.get('auto_reload', True)
+=======
+    logging.info('  init jinja2...')
+    options = dict(
+        autoescape=kw.get('autoescape', True),  # 默认打开自动转义 转义字符
+        block_start_string=kw.get('block_start_string', '{%'),  # 模板控制块的字符串 {% block %}
+        block_end_string=kw.get('block_end_string', '%}'),
+        variable_start_string=kw.get('variable_start_string', '{{'),  # 模板变量的字符串 {{ var/func }}
+        variable_end_string=kw.get('variable_end_string', '}}'),
+        auto_reload=kw.get('auto_reload', True)
+>>>>>>> 2dda44b762ec9d280af1b9ca30bc3509b41afa85
     )
     path = kw.get('path', None)
     if path is None:
         path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')  # 获得模板路径
+<<<<<<< HEAD
     logging.info('set jinja2 template path: %s' % path)
+=======
+    logging.info('  set jinja2 template path: %s' % path)
+>>>>>>> 2dda44b762ec9d280af1b9ca30bc3509b41afa85
     env = Environment(loader=FileSystemLoader(path), **options)  # 用文件系统加载器加载模板
     filters = kw.get('filters', None)  # 尝试获取过滤器
     if filters is not None:
@@ -52,7 +67,11 @@ async def logger_factory(app, handler):
     """中间件，可以在处理请求前，对请求进行验证、筛选、记录等操作"""
 
     async def logger(request):
+<<<<<<< HEAD
         logging.info('Request: %s %s' % (request.method, request.path))  # 记录日志
+=======
+        logging.info('  Request: %s %s' % (request.method, request.path))  # 记录日志
+>>>>>>> 2dda44b762ec9d280af1b9ca30bc3509b41afa85
         # await asyncio.sleep(0.3)
         return (await handler(request))  # 继续处理请求
 
@@ -93,7 +112,11 @@ async def data_factory(app, handler):
 async def response_factory(app, handler):
     async def response(request):
         """对处理函数的响应进行处理"""
+<<<<<<< HEAD
         logging.info('Response handler...')
+=======
+        logging.info('  Response handler...')
+>>>>>>> 2dda44b762ec9d280af1b9ca30bc3509b41afa85
         r = await handler(request)
         if isinstance(r, web.StreamResponse):  # 处理响应流
             return r
@@ -115,7 +138,10 @@ async def response_factory(app, handler):
                 resp.content_type = 'application/json;charset=utf-8'
                 return resp
             else:
+<<<<<<< HEAD
                 r['__user__'] = request.__user__
+=======
+>>>>>>> 2dda44b762ec9d280af1b9ca30bc3509b41afa85
                 resp = web.Response(body=app['__templating__'].get_template(template).render(**r).encode(
                     'utf-8'))  # 获取模板，并传入响应参数进行渲染，生成HTML
                 resp.content_type = 'text/html;charset=utf-8'
@@ -150,15 +176,25 @@ def datetime_filter(t):
 
 async def init(loop):  # 定义init函数，标记为协程，传入loop协程参数
     """服务器运行程序：创建web实例程序，该实例程序绑定路由和处理函数，运行服务器，监听端口请求，送到路由处理"""
+<<<<<<< HEAD
     await orm.create_pool(loop=loop, **configs.db)
     app = web.Application(loop=loop, middlewares=[
         logger_factory, auth_factory, response_factory
+=======
+    await orm.create_pool(loop=loop, host='127.0.0.1', port=3306, user='webapp', password='webapp', db='webapp')
+    app = web.Application(loop=loop, middlewares=[
+        logger_factory, response_factory
+>>>>>>> 2dda44b762ec9d280af1b9ca30bc3509b41afa85
     ])  # 创建一个web服务器实例，用于处理URL，HTTP协议
     init_jinja2(app, filters=dict(datetime=datetime_filter))
     add_routes(app, 'handlers')  # 将URL注册进route，将URL和index处理函数绑定，当浏览器敲击URL时，返回处理函数的内容，也就是返回一个HTTP响应
     add_static(app)
     srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9000)  # 创建一个监听服务
+<<<<<<< HEAD
     logging.info('server started at http://127.0.0.1:9000...')
+=======
+    logging.info('  server started at http://127.0.0.1:9000...')
+>>>>>>> 2dda44b762ec9d280af1b9ca30bc3509b41afa85
     return srv
 
 
