@@ -79,7 +79,7 @@ async def cookie2user(cookie_str):
 
 @get('/')
 def index(request):
-    summary = '古之成大事者,不惟有超士之才,亦有坚忍不拔之志。'
+    summary = '古之成大事者,不惟有超士之才,亦有坚忍不拔之志。--《晁错论》 苏轼'
     blogs = [
         Blog(id='1', name='Test Blog', summary=summary, created_at=time.time() - 120),
         Blog(id='2', name='Something New', summary=summary, created_at=time.time() - 3600),
