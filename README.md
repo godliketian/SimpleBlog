@@ -1,5 +1,5 @@
 # python3-blog-webapp
-一个Python实现的Blog网站，包含日志、用户和评论3部分。
+博客网站，包含日志、用户和评论3部分。
 ## Documentation
 [01-init](./docs/01-init_env.md)
 
