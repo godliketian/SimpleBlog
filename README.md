@@ -1,4 +1,4 @@
-# python3-blog-webapp
+# SimpleBlog
 博客网站，包含日志、用户和评论3部分。
 ## Documentation
 [01-init](./docs/01-init_env.md)
