@@ -1,6 +1,6 @@
 ## init env
 
-* CentOS7.5 [Download](https://mirrors.aliyun.com/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1804.iso)
+* CentOS7.5
 
 * Install Python3.6.6 and Pip3
 
