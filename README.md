@@ -1,6 +1,9 @@
-# SimpleBlog
-博客网站，包含日志、用户和评论3部分。
-## Documentation
+**博客网站**
+
+包含日志，用户，评论三部分
+
+**文档**
+
 [01-init](./docs/01-init_env.md)
 
 [02-app](./docs/02-app.md)
