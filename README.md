@@ -1,8 +1,8 @@
-**博客网站**
+# Blog Site
 
-包含日志，用户，评论三部分
+Contains three parts: blogs, user manage, and comments.
 
-**文档**
+# Docs
 
 [01-init](./docs/01-init_env.md)
 
